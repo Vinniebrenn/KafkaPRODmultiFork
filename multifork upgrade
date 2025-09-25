@@ -1,0 +1,40 @@
+I want you to first create a detailed migration plan for upgrading my Spring Boot microservice.  
+Do not change any code yet. The plan must clearly describe:
+
+1. **Current State (Before Upgrade)**
+   - Java version (currently Java 8).
+   - Spring Boot version (currently 2.x).
+   - Packaging (currently JAR/ZIP with Windows scripts).
+   - Config format (currently .properties).
+   - Common dependencies (list typical ones with versions).
+   - Code structure (likely mixed layers, some deprecated APIs, field injection, javax.* usage).
+   - Any technical debt or outdated patterns.
+
+2. **Target State (After Upgrade)**
+   - Java 17 baseline.
+   - Spring Boot 3.x baseline.
+   - Packaging as single executable JAR (no ZIP or Windows bundle).
+   - Config in YAML format, organized with profiles.
+   - Dependencies upgraded to latest enterprise-ready versions.
+   - Use Jakarta (`jakarta.*`) instead of javax.
+   - Constructor injection instead of field injection.
+   - Clear layer separation (controller, service, repository, config).
+   - Comments on all public methods.
+   - Enterprise coding standards, readability, maintainability.
+   - Retain date/time fields as-is (JulianCalendar expected).
+
+3. **Migration Phases**
+   - Phase 1: Update `pom.xml` → Java 17 & Spring Boot 3.x.
+   - Phase 2: Fix compilation issues (Jakarta migration, deprecated APIs).
+   - Phase 3: Move `.properties` → `.yml`.
+   - Phase 4: Refactor project layers with comments and best practices.
+   - Phase 5: Simplify packaging (single JAR only).
+   - Phase 6: Final cleanup & enterprise standards check.
+
+4. **Output format**
+   - Write the plan as a Markdown table or structured list.
+   - Each step should show "Before" → "After".
+   - Highlight risks, manual effort, and automated effort.
+
+⚠️ Do not generate any actual code changes yet.  
+Only generate the detailed migration plan for my review.
