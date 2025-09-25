@@ -1,0 +1,173 @@
+Operational Support Guide – Spring Boot Microservices Platform
+1. Purpose & Scope
+
+This document serves as the official operational reference for supporting and maintaining the Spring Boot microservices platform. It is intended for the L2/L3 Support Team, Infrastructure Team, and Audit Stakeholders.
+The scope covers deployment, monitoring, logging, troubleshooting, and incident handling for all microservices running in UAT and Production environments.
+
+2. System Overview
+
+The platform consists of multiple Spring Boot services:
+
+CTX Service –  processing
+
+STX Service – processing
+
+INY Service – Read-only inquiry API
+
+SWH Service – End-of-day (EOD) toggle process
+
+All services are hosted on Windows Servers (except SWH which runs as a scheduled command-line process triggered by SQL job).
+
+Backend database: SQL Server
+
+Caching: Elastic Cache for inquiry optimization
+
+Logging & Monitoring: ELK Stack (Filebeat → Logstash → Elastic Cloud → Kibana)
+
+Security & Access Control: Active Directory (AD) based authentication + PAM-controlled Prod access
+
+3. Deployment Process
+3.1 UAT Deployment
+
+Build artifacts using Maven.
+
+Package service ZIP (JAR + dependencies + config).
+
+Copy ZIP to UAT server.
+
+Extract and configure environment-specific properties (application-uat.properties).
+
+Register as Windows Service via WinSW.
+
+Validate service startup and log availability.
+
+3.2 Production Deployment
+
+Deployment is performed through PAM (Privileged Access Management).
+
+Copy packaged artifact to Prod server.
+
+Update application-prod.properties (kept outside JAR for flexibility).
+
+Start service via Windows Services console.
+
+Verify logs in service.log and confirm connectivity with SQL DB.
+
+Validate end-to-end transaction flow via test SOAP/REST API calls.
+
+4. Configuration Management
+
+Config files are externalized for each environment:
+
+application-uat.properties
+
+application-prod.properties
+
+Sensitive values (DB passwords, service accounts) are vaulted in PAM and injected during deployment.
+
+Services read environment-specific configs at startup (Spring Profiles).
+
+5. Monitoring & Logging
+5.1 Logs
+
+Location: <service_home>/logs/
+
+Files:
+
+application.log → system events, warnings, errors
+
+service.log → SOAP/REST request/response details
+
+Log rotation is configured for 30 days.
+
+5.2 ELK Integration
+
+Filebeat ships logs from servers to Logstash.
+
+Logstash processes and enriches log data.
+
+Logs stored in Elastic Cloud.
+
+Kibana dashboards available for transaction status, errors, and performance metrics.
+
+5.3 Monitoring
+
+Spring Boot Actuator provides health endpoints:
+
+/actuator/health
+
+/actuator/metrics
+
+Alerts configured in ELK (Watcher rules for failure spikes).
+
+6. Operational Procedures
+
+Start/Stop Services: via Windows Service Manager or command line.
+
+Check Logs: open service.log or use Kibana.
+
+Cache Refresh: automated daily job; manual refresh triggered via API if required.
+
+Database Failover: switch between primary and secondary DB handled by config.
+
+Service Restart Policy: all services auto-restart on failure (WinSW config).
+
+7. Incident Management
+
+Detection: Alerts via Kibana/ELK or user reports.
+
+Initial Triage:
+
+Check service status
+
+Review logs (service.log)
+
+Validate DB connectivity
+
+Resolution: Restart service or escalate.
+
+Escalation Matrix:
+
+L1 Support: Basic triage, restart services
+
+L2 Support: Deeper investigation, log analysis, cache troubleshooting
+
+L3/Engineering: Code-level issues, DB schema changes, bug fixes
+
+8. Change Management
+
+All deployments require ABC approval.
+
+Changes logged in Confluence Release Notes.
+
+Rollback Plan: revert to previous JAR + config.
+
+9. Security & Access Control
+
+All services run under Windows Service Accounts.
+
+Authenticated against Active Directory (AD).
+
+PAM controls Prod access (engineers use temporary credentials).
+
+Audit logs capture:
+
+Deployment actions
+
+Service restarts
+
+Config changes
+
+10. Roadmap Alignment
+
+Current process: manual Maven builds and deployments via PAM.
+
+Future state:
+
+DevOps Pipeline (Jenkins/GitLab CI)
+
+Containerization (Docker)
+
+Orchestration (OpenShift/Kubernetes)
+
+Migration work is in progress and tracked in the Tech Roadmap.
