@@ -1,30 +1,71 @@
-Strengths (aligned to role requirements):
+I want you to first create a detailed modernization plan for my Spring Boot microservices.  
+Do not change any code yet. The plan must clearly describe the "Before" and "After" state.  
+The plan must cover Java/Spring upgrades, SOAP→REST migration, and refactoring away from the shared "common" module.
 
-Java 17, Spring Boot, externalizing configurations and applying DevOps practices ( but with Jenkins) 
-OCP deployments and API management Apigee 
-Good exposure to GitHub Copilot with IntelliJ (chat + coding modes, instruction-driven prompts, and reuse strategies)
-GitHub branching strategies
-Tech Design documentation (still with some room for improvement)
+---
 
-Additional skills (bonus, to strengthen before onboarding):
-Kafka (advanced principles)
-Elasticsearch
-GraphQL
+### 1. Current State (Before Upgrade)
+- Java version: Java 8
+- Spring Boot version: 2.x
+- Packaging: fat JAR or ZIP with Windows scripts
+- Config format: .properties
+- Dependencies: outdated versions, includes Apache CXF for SOAP-based XML web services
+- Code structure: layers are partially mixed, uses field injection, javax.* APIs, some deprecated Spring Boot APIs
+- Services:
+  - cash-txn-service
+  - sec-txn-service
+  - inquiry-service
+  - switch-service
+- Shared module: "common" module with utilities, DTOs, and shared classes imported by all services
+- Service endpoints: SOAP services exposed using Apache CXF
+- Date/time handling: JulianCalendar (must remain unchanged)
 
+---
 
-WebSphere deployments
-SSL upgrades (both console-level and application-level)
-Clustering and load balancing 
-Profile management (standalone and clustered profiles)
-data source & MQ integration setup
-Unix commands and crontab scheduling
-Application support skill (operations, troubleshooting, monitoring)
-also some Development exposure in Java, Spring Boot, and OCP (bonus for future cloud-hosted migrations)
-Familiarity with GitHub Copilot
+### 2. Target State (After Upgrade)
+- Java 17 baseline
+- Spring Boot 3.x baseline
+- Packaging: single executable JAR (no ZIP/Windows bundle)
+- Config format: YAML with profiles
+- Dependencies: upgraded to latest stable enterprise-ready versions
+- Use jakarta.* instead of javax.*
+- Use constructor injection instead of field injection
+- Clear separation of layers: controller, service, repository, config
+- Add JavaDoc-style comments on all public methods
+- Retain JulianCalendar fields as-is
+- SOAP → REST:
+  - Replace Apache CXF SOAP endpoints with REST controllers (`@RestController`)
+  - JSON request/response DTOs mapped from existing SOAP schemas
+  - Follow REST best practices (resources, HTTP verbs, status codes)
+- Shared "common" module:
+  - Decommission the `common` module
+  - Identify which classes/utilities each service depends on
+  - Copy or refactor those classes into the respective service module
+  - Keep services **independent**, no hidden coupling via a common shared module
 
-“Do you want me to share it with John to ensure her expectations are also met?”
+---
 
+### 3. Migration Phases
+- **Phase 1:** Upgrade `pom.xml` → Java 17 & Spring Boot 3.x
+- **Phase 2:** Fix compilation issues (Jakarta migration, deprecated APIs)
+- **Phase 3:** Convert `.properties` → `.yml` configs
+- **Phase 4:** Refactor code layers (controller, service, repository, config) with comments
+- **Phase 5:** Replace SOAP endpoints with RESTful controllers  
+   - Identify CXF SOAP endpoints  
+   - Generate REST DTOs from existing SOAP schemas  
+   - Implement REST endpoints using Spring Web annotations  
+   - Document mappings in comments
+- **Phase 6:** Refactor away from shared `common` module  
+   - Inventory dependencies in `common`  
+   - Relocate only the needed classes/utilities into each service’s own codebase  
+   - Remove `common` from build system entirely
+- **Phase 7:** Simplify packaging (build single JAR only, no ZIP/Windows scripts)
+- **Phase 8:** Final cleanup, enforce enterprise coding standards, ensure REST API documentation (e.g., OpenAPI/Swagger)
 
+---
 
-
-
+### 4. Output Format
+- Write the migration plan in Markdown (tables or structured list).
+- Each phase should clearly show "Before" → "After".
+- Highlight risks, manual effort, and automated effort.
+- Do not generate any actual code yet.
